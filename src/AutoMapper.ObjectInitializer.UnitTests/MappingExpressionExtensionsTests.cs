@@ -41,6 +41,20 @@ namespace AutoMapper.ObjectInitializer.UnitTests
         }
 
         [Fact]
+        public void TestMapUsingWithInvalidExpression()
+        {
+            // Act
+            ArgumentException exception = Assert.Throws<ArgumentException>(() => new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<UserModel, UserEntity>()
+                    .MapUsing(src => null);
+            }));
+
+            // Assert
+            exception.Message.ShouldContain("Parameter is not an object initializer expression.");
+        }
+
+        [Fact]
         public void TestMapUsingWithNewExpression()
         {
             // Arrange
@@ -85,20 +99,8 @@ namespace AutoMapper.ObjectInitializer.UnitTests
 
             // Assert
             userEntity.ShouldNotBeNull();
-        }
-
-        [Fact]
-        public void TestMapUsingWithInvalidExpression()
-        {
-            // Act
-            ArgumentException exception = Assert.Throws<ArgumentException>(() => new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<UserModel, UserEntity>()
-                    .MapUsing(src => null);
-            }));
-
-            // Assert
-            exception.Message.ShouldContain("Parameter is not an object initializer expression.");
+            userEntity.Title.ShouldEqual(userModel.Name);
+            configuration.AssertConfigurationIsValid();
         }
     }
 }

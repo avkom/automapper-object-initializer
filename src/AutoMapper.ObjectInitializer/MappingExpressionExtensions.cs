@@ -20,6 +20,19 @@ namespace AutoMapper.ObjectInitializer
                     Expression.Lambda<Func<TSource, TDestination>>(memberInitExpression.NewExpression, ctor.Parameters);
                 mappingExpression.ConstructUsing((Expression<Func<TSource, TDestination>>) lambdaExpression);
 
+                foreach (MemberBinding memberBinding in memberInitExpression.Bindings)
+                {
+                    if (memberBinding is MemberAssignment memberAssignment)
+                    {
+                        if (memberAssignment.Expression is MemberExpression memberExpression)
+                        {
+                            mappingExpression.ForMember(
+                                memberBinding.Member.Name,
+                                opt => opt.MapFrom(memberExpression.Member.Name));
+                        }
+                    }
+                }
+
                 return mappingExpression;
             }
 

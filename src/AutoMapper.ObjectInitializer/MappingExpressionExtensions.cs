@@ -16,7 +16,10 @@ namespace AutoMapper.ObjectInitializer
 
             if (ctor.Body is MemberInitExpression memberInitExpression)
             {
-                var lambdaExpression = Expression.Lambda<Func<TSource, TDestination>>(memberInitExpression.NewExpression, ctor.Parameters);
+                var lambdaExpression = Expression.Lambda<Func<TSource, TDestination>>(
+                    memberInitExpression.NewExpression,
+                    ctor.Parameters);
+
                 mappingExpression.ConstructUsing(lambdaExpression);
 
                 foreach (MemberBinding memberBinding in memberInitExpression.Bindings)

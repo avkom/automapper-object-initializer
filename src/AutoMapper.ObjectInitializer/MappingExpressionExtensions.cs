@@ -16,9 +16,8 @@ namespace AutoMapper.ObjectInitializer
 
             if (ctor.Body is MemberInitExpression memberInitExpression)
             {
-                LambdaExpression lambdaExpression =
-                    Expression.Lambda<Func<TSource, TDestination>>(memberInitExpression.NewExpression, ctor.Parameters);
-                mappingExpression.ConstructUsing((Expression<Func<TSource, TDestination>>) lambdaExpression);
+                var lambdaExpression = Expression.Lambda<Func<TSource, TDestination>>(memberInitExpression.NewExpression, ctor.Parameters);
+                mappingExpression.ConstructUsing(lambdaExpression);
 
                 foreach (MemberBinding memberBinding in memberInitExpression.Bindings)
                 {
@@ -26,7 +25,7 @@ namespace AutoMapper.ObjectInitializer
                     {
                         var mapExpression = Expression.Lambda<Func<TSource, object>>(
                             memberAssignment.Expression,
-                            Expression.Parameter(typeof(TSource)));
+                            ctor.Parameters);
 
                         mappingExpression.ForMember(
                             memberBinding.Member.Name,

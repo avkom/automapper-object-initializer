@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using Should;
 using Xunit;
 
@@ -20,6 +21,8 @@ namespace AutoMapper.ObjectInitializer.UnitTests
         public void TestForMember()
         {
             // Arrange
+            Expression<Func<UserModel, string>> mapExpression = src => src.Name;
+
             MapperConfiguration configuration = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<UserModel, UserEntity>()

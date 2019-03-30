@@ -24,12 +24,13 @@ namespace AutoMapper.ObjectInitializer
                 {
                     if (memberBinding is MemberAssignment memberAssignment)
                     {
-                        if (memberAssignment.Expression is MemberExpression memberExpression)
-                        {
-                            mappingExpression.ForMember(
-                                memberBinding.Member.Name,
-                                opt => opt.MapFrom(memberExpression.Member.Name));
-                        }
+                        var mapExpression = Expression.Lambda<Func<TSource, object>>(
+                            memberAssignment.Expression,
+                            Expression.Parameter(typeof(TSource)));
+
+                        mappingExpression.ForMember(
+                            memberBinding.Member.Name,
+                            opt => opt.MapFrom(mapExpression));
                     }
                 }
 

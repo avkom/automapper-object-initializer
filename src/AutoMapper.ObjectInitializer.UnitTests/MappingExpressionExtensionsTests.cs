@@ -9,11 +9,13 @@ namespace AutoMapper.ObjectInitializer.UnitTests
         public class UserModel
         {
             public string Name { get; set; }
+            public int IntSourceProperty { get; set; }
         }
 
         public class UserEntity
         {
             public string Title { get; set; }
+            public int IntDestinationProperty { get; set; }
             public string PropertyToSetConstant { get; set; }
             public string PropertyToIgnore { get; set; }
         }
@@ -26,6 +28,7 @@ namespace AutoMapper.ObjectInitializer.UnitTests
             {
                 cfg.CreateMap<UserModel, UserEntity>()
                     .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Name))
+                    .ForMember(dst => dst.IntDestinationProperty, opt => opt.MapFrom(src => src.IntSourceProperty))
                     .ForMember(dst => dst.PropertyToSetConstant, opt => opt.MapFrom(src => "5"))
                     .ForMember(dst => dst.PropertyToIgnore, opt => opt.Ignore());
             });
@@ -41,6 +44,7 @@ namespace AutoMapper.ObjectInitializer.UnitTests
             // Assert
             userEntity.ShouldNotBeNull();
             userEntity.Title.ShouldEqual(userModel.Name);
+            userEntity.IntDestinationProperty.ShouldEqual(userModel.IntSourceProperty);
             userEntity.PropertyToSetConstant.ShouldEqual("5");
             configuration.AssertConfigurationIsValid();
         }
@@ -91,6 +95,7 @@ namespace AutoMapper.ObjectInitializer.UnitTests
                     .MapUsing(src => new UserEntity
                     {
                         Title = src.Name,
+                        IntDestinationProperty = src.IntSourceProperty,
                         PropertyToSetConstant = "5",
                         PropertyToIgnore = default
                     });
@@ -107,6 +112,7 @@ namespace AutoMapper.ObjectInitializer.UnitTests
             // Assert
             userEntity.ShouldNotBeNull();
             userEntity.Title.ShouldEqual(userModel.Name);
+            userEntity.IntDestinationProperty.ShouldEqual(userModel.IntSourceProperty);
             userEntity.PropertyToSetConstant.ShouldEqual("5");
             configuration.AssertConfigurationIsValid();
         }

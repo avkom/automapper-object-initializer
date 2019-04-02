@@ -34,7 +34,7 @@ namespace AutoMapper.ObjectInitializer
                         }
                         else
                         {
-                            var mapFromExpression = Expression.Lambda<Func<TSource, object>>(
+                            dynamic mapFromExpression = Expression.Lambda(
                                 memberAssignment.Expression,
                                 ctor.Parameters);
 

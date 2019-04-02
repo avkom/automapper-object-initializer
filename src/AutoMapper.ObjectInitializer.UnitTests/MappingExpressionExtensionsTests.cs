@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq.Expressions;
 using Should;
 using Xunit;
 
@@ -15,6 +14,7 @@ namespace AutoMapper.ObjectInitializer.UnitTests
         public class UserEntity
         {
             public string Title { get; set; }
+            public string PropertyToIgnore { get; set; }
         }
 
         [Fact]
@@ -24,7 +24,8 @@ namespace AutoMapper.ObjectInitializer.UnitTests
             MapperConfiguration configuration = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<UserModel, UserEntity>()
-                    .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Name));
+                    .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Name))
+                    .ForMember(dst => dst.PropertyToIgnore, opt => opt.Ignore());
             });
             IMapper mapper = configuration.CreateMapper();
             UserModel userModel = new UserModel
@@ -86,7 +87,8 @@ namespace AutoMapper.ObjectInitializer.UnitTests
                 cfg.CreateMap<UserModel, UserEntity>()
                     .MapUsing(src => new UserEntity
                     {
-                        Title = src.Name
+                        Title = src.Name,
+                        PropertyToIgnore = default
                     });
             });
             IMapper mapper = configuration.CreateMapper();

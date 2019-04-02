@@ -5,15 +5,10 @@ namespace AutoMapper.ObjectInitializer
 {
     public static class MappingExpressionExtensions
     {
-        public static IMappingExpression<TSource, TDestination> MapUsing<TSource, TDestination>(
+        public static IMappingExpression<TSource, TDestination> ConstructAndMapUsing<TSource, TDestination>(
             this IMappingExpression<TSource, TDestination> mappingExpression,
             Expression<Func<TSource, TDestination>> ctor)
         {
-            if (ctor.Body is NewExpression)
-            {
-                return mappingExpression.ConstructUsing(ctor);
-            }
-
             if (ctor.Body is MemberInitExpression memberInitExpression)
             {
                 var lambdaExpression = Expression.Lambda<Func<TSource, TDestination>>(
@@ -22,6 +17,18 @@ namespace AutoMapper.ObjectInitializer
 
                 mappingExpression.ConstructUsing(lambdaExpression);
 
+                return MapUsing(mappingExpression, ctor);
+            }
+
+            throw new ArgumentException("Parameter is not an object initializer expression.", nameof(ctor));
+        }
+
+        public static IMappingExpression<TSource, TDestination> MapUsing<TSource, TDestination>(
+            this IMappingExpression<TSource, TDestination> mappingExpression,
+            Expression<Func<TSource, TDestination>> ctor)
+        {
+            if (ctor.Body is MemberInitExpression memberInitExpression)
+            {
                 foreach (MemberBinding memberBinding in memberInitExpression.Bindings)
                 {
                     if (memberBinding is MemberAssignment memberAssignment)

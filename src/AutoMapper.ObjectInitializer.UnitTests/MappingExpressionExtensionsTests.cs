@@ -10,12 +10,14 @@ namespace AutoMapper.ObjectInitializer.UnitTests
         {
             public string Name { get; set; }
             public int IntSourceProperty { get; set; }
+            public string StringDateSourceProperty { get; set; }
         }
 
         public class UserEntity
         {
             public string Title { get; set; }
             public int IntDestinationProperty { get; set; }
+            public DateTime DateDestinationProperty { get; set; }
             public string PropertyToSetConstant { get; set; }
             public string PropertyToIgnore { get; set; }
         }
@@ -29,13 +31,16 @@ namespace AutoMapper.ObjectInitializer.UnitTests
                 cfg.CreateMap<UserModel, UserEntity>()
                     .ForMember(dst => dst.Title, opt => opt.MapFrom(src => src.Name))
                     .ForMember(dst => dst.IntDestinationProperty, opt => opt.MapFrom(src => src.IntSourceProperty))
+                    .ForMember(dst => dst.DateDestinationProperty, opt => opt.MapFrom(src => src.StringDateSourceProperty))
                     .ForMember(dst => dst.PropertyToSetConstant, opt => opt.MapFrom(src => "5"))
                     .ForMember(dst => dst.PropertyToIgnore, opt => opt.Ignore());
             });
             IMapper mapper = configuration.CreateMapper();
             UserModel userModel = new UserModel
             {
-                Name = "Name"
+                Name = "Name",
+                IntSourceProperty = 10,
+                StringDateSourceProperty = "2019-01-02T11:22:33.456Z"
             };
 
             // Act
@@ -45,6 +50,7 @@ namespace AutoMapper.ObjectInitializer.UnitTests
             userEntity.ShouldNotBeNull();
             userEntity.Title.ShouldEqual(userModel.Name);
             userEntity.IntDestinationProperty.ShouldEqual(userModel.IntSourceProperty);
+            userEntity.DateDestinationProperty.ToString().ShouldEqual(new DateTime(2019, 1, 2, 11, 22, 33, DateTimeKind.Utc).ToLocalTime().ToString());
             userEntity.PropertyToSetConstant.ShouldEqual("5");
             configuration.AssertConfigurationIsValid();
         }
@@ -74,6 +80,7 @@ namespace AutoMapper.ObjectInitializer.UnitTests
                     {
                         Title = src.Name,
                         IntDestinationProperty = src.IntSourceProperty,
+                        DateDestinationProperty = MappingOptions.MapFrom<DateTime>(src.StringDateSourceProperty),
                         PropertyToSetConstant = "5",
                         PropertyToIgnore = default
                     });
@@ -81,7 +88,9 @@ namespace AutoMapper.ObjectInitializer.UnitTests
             IMapper mapper = configuration.CreateMapper();
             UserModel userModel = new UserModel
             {
-                Name = "Name"
+                Name = "Name",
+                IntSourceProperty = 10,
+                StringDateSourceProperty = "2019-01-02T11:22:33.456Z"
             };
 
             // Act
@@ -91,6 +100,7 @@ namespace AutoMapper.ObjectInitializer.UnitTests
             userEntity.ShouldNotBeNull();
             userEntity.Title.ShouldEqual(userModel.Name);
             userEntity.IntDestinationProperty.ShouldEqual(userModel.IntSourceProperty);
+            userEntity.DateDestinationProperty.ToString().ShouldEqual(new DateTime(2019, 1, 2, 11, 22, 33, DateTimeKind.Utc).ToLocalTime().ToString());
             userEntity.PropertyToSetConstant.ShouldEqual("5");
             configuration.AssertConfigurationIsValid();
         }

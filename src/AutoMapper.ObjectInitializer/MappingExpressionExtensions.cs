@@ -38,17 +38,29 @@ namespace AutoMapper.ObjectInitializer
                             mappingExpression.ForMember(
                                 memberBinding.Member.Name,
                                 opt => opt.Ignore());
+                            break;
+                        }
+
+                        Expression mapFromExpressionBody;
+
+                        if (memberAssignment.Expression is MethodCallExpression methodCallExpression &&
+                            methodCallExpression.Method.DeclaringType == typeof(MappingOptions) &&
+                            methodCallExpression.Method.Name == nameof(MappingOptions.MapFrom))
+                        {
+                            mapFromExpressionBody = methodCallExpression.Arguments[0];
                         }
                         else
                         {
-                            dynamic mapFromExpression = Expression.Lambda(
-                                memberAssignment.Expression,
-                                ctor.Parameters);
-
-                            mappingExpression.ForMember(
-                                memberBinding.Member.Name,
-                                opt => opt.MapFrom(mapFromExpression));
+                            mapFromExpressionBody = memberAssignment.Expression;
                         }
+
+                        dynamic mapFromExpression = Expression.Lambda(
+                            mapFromExpressionBody,
+                            ctor.Parameters);
+
+                        mappingExpression.ForMember(
+                            memberBinding.Member.Name,
+                            opt => opt.MapFrom(mapFromExpression));
                     }
                 }
 

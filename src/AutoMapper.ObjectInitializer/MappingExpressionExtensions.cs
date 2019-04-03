@@ -11,13 +11,13 @@ namespace AutoMapper.ObjectInitializer
         {
             if (ctor.Body is MemberInitExpression memberInitExpression)
             {
-                var lambdaExpression = Expression.Lambda<Func<TSource, TDestination>>(
+                var ctorExpressionWithoutMemberInit = Expression.Lambda<Func<TSource, TDestination>>(
                     memberInitExpression.NewExpression,
                     ctor.Parameters);
 
-                mappingExpression.ConstructUsing(lambdaExpression);
-
-                return MapUsing(mappingExpression, ctor);
+                return mappingExpression
+                    .ConstructUsing(ctorExpressionWithoutMemberInit)
+                    .MapUsing(ctor);
             }
 
             throw new ArgumentException("Parameter is not an object initializer expression.", nameof(ctor));
@@ -33,34 +33,28 @@ namespace AutoMapper.ObjectInitializer
                 {
                     if (memberBinding is MemberAssignment memberAssignment)
                     {
+                        // DestinationProperty = default
                         if (memberAssignment.Expression is DefaultExpression)
                         {
-                            mappingExpression.ForMember(
-                                memberBinding.Member.Name,
-                                opt => opt.Ignore());
+                            mappingExpression.ForMember(memberBinding.Member.Name, opt => opt.Ignore());
                             break;
                         }
 
-                        Expression mapFromExpressionBody;
-
+                        // DestinationProperty = MappingOptions.MapFrom<DateTime>(src.SourceProperty)
                         if (memberAssignment.Expression is MethodCallExpression methodCallExpression &&
                             methodCallExpression.Method.DeclaringType == typeof(MappingOptions) &&
                             methodCallExpression.Method.Name == nameof(MappingOptions.MapFrom))
                         {
-                            mapFromExpressionBody = methodCallExpression.Arguments[0];
+                            dynamic mapFromExpression = Expression.Lambda(methodCallExpression.Arguments[0], ctor.Parameters);
+                            mappingExpression.ForMember(memberBinding.Member.Name, opt => opt.MapFrom(mapFromExpression));
                         }
+
+                        // DestinationProperty = src.SourceProperty
                         else
                         {
-                            mapFromExpressionBody = memberAssignment.Expression;
+                            dynamic mapFromExpression = Expression.Lambda(memberAssignment.Expression, ctor.Parameters);
+                            mappingExpression.ForMember(memberBinding.Member.Name, opt => opt.MapFrom(mapFromExpression));
                         }
-
-                        dynamic mapFromExpression = Expression.Lambda(
-                            mapFromExpressionBody,
-                            ctor.Parameters);
-
-                        mappingExpression.ForMember(
-                            memberBinding.Member.Name,
-                            opt => opt.MapFrom(mapFromExpression));
                     }
                 }
 
